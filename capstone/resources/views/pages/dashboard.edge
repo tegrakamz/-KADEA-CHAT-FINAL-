@@ -1,0 +1,14 @@
+@layouts.app({ title: 'Discussions' })
+  <main class="messenger-layout">
+    @include('partials/conversation_sidebar')
+    <section class="chat-empty-pane" aria-label="Aucune discussion sélectionnée">
+      <div class="empty-illustration" aria-hidden="true">
+        <span class="empty-illustration__back"></span>
+        <span class="empty-illustration__front">✳</span>
+      </div>
+      <h1>Vos échanges, au même endroit.</h1>
+      <p>Sélectionnez une discussion pour commencer à échanger, ou démarrez une nouvelle conversation avec votre équipe.</p>
+      <span class="empty-pane-hint"><span class="online-dot"></span> Un espace de travail pensé pour Kadea Academy</span>
+    </section>
+  </main>
+@end

@@ -1,0 +1,31 @@
+@layouts.marketing()
+  <main class="landing-page">
+    <div class="landing-copy">
+      <p class="eyebrow"><span class="online-dot"></span> KADEA ACADEMY · VOTRE ESPACE D’ÉCHANGE</p>
+      <h1>Les bonnes idées<br />circulent <em>ensemble.</em></h1>
+      <p class="landing-intro">Kadea Chat rassemble vos conversations d’équipe dans un espace simple, chaleureux et pensé pour avancer ensemble.</p>
+      <div class="landing-actions">
+        @link({ route: 'new_account.create', class: 'gold-button gold-button--large' })
+          Créer mon compte <span aria-hidden="true">↗</span>
+        @end
+        @link({ route: 'session.create', class: 'landing-secondary' })
+          J’ai déjà un compte
+        @end
+      </div>
+      <div class="landing-note"><span class="landing-note__avatars"><i>T</i><i>K</i><i>A</i></span><span>La communauté Kadea, en un seul endroit.</span></div>
+    </div>
+    <div class="landing-art" aria-hidden="true">
+      <div class="landing-art__orbit landing-art__orbit--one"></div>
+      <div class="landing-art__orbit landing-art__orbit--two"></div>
+      <div class="landing-note-card landing-note-card--top"><span class="landing-note-card__icon">✳</span><span><b>Les échanges avancent.</b><small>Une idée partagée change tout.</small></span></div>
+      <div class="landing-chat-card">
+        <div class="landing-chat-card__head"><span class="conversation-avatar">K</span><span><b>Équipe Kadea</b><small><i class="online-dot"></i> Espace de discussion</small></span><span class="landing-card-dots">•••</span></div>
+        <div class="landing-bubble"><small>Rachel W.</small><p>La nouvelle charte est prête pour vos retours ✨</p></div>
+        <div class="landing-bubble landing-bubble--mine"><p>Super, on en parle ici !</p></div>
+        <div class="landing-composer"><span>Écrivez votre message...</span><b>➤</b></div>
+      </div>
+      <div class="landing-note-card landing-note-card--bottom"><span class="landing-spark">✦</span><span><b>Clair. Direct. Ensemble.</b><small>Vos conversations restent à portée.</small></span></div>
+    </div>
+  </main>
+  <footer class="landing-footer"><span>KADEA CHAT</span><span>La conversation continue ici.</span><span>© KADEA ACADEMY</span></footer>
+@end

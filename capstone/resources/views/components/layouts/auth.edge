@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FAFAF8" />
+    <title>Kadea Chat · Votre espace d’échange</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('dumper')
+  </head>
+  <body class="auth-body">
+    <main class="auth-page">
+      <div class="auth-card">
+        <div class="auth-card__brand">@!logo({ size: 38 })</div>
+        <div class="auth__form-wrap">{{{ await $slots.main() }}}</div>
+        <p class="auth-card__note">Un espace de discussion pour la communauté Kadea Academy.</p>
+      </div>
+      <p class="auth-page__footer">KADEA ACADEMY <span>·</span> KADEA CHAT</p>
+    </main>
+    @include('partials/flash_alerts')
+  </body>
+</html>

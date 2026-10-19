@@ -1,0 +1,9 @@
+@let(size = $props.get('size', 26))
+@link({
+  route: 'home',
+  'aria-label': 'Kadea Chat, accueil',
+  class: 'brand',
+})
+  <span class="brand__mark" style="width: {{ size }}px; height: {{ size }}px;" aria-hidden="true">k</span>
+  <span class="brand__name">Kadea<span>Chat</span></span>
+@end

@@ -1,0 +1,52 @@
+@layouts.app({ title: conversationTitle })
+  <main class="messenger-layout messenger-layout--conversation">
+    @include('partials/conversation_sidebar')
+    <section class="chat-panel">
+      <header class="chat-header">
+        <a class="chat-back" href="{{ route('dashboard') }}" aria-label="Retour aux discussions">←</a>
+        <span class="conversation-avatar conversation-avatar--large" aria-hidden="true">{{ conversationTitle.charAt(0).toUpperCase() }}</span>
+        <div class="chat-header__identity">
+          <p class="eyebrow">{{ conversation.type === 'group' ? 'GROUPE' : 'CONVERSATION PRIVÉE' }}</p>
+          <h1>{{ conversationTitle }}</h1>
+          <p class="chat-header__status">{{ members.length }} membre{{ members.length > 1 ? 's' : '' }}</p>
+        </div>
+        <button class="icon-button chat-search" type="button" aria-label="Recherche dans la discussion bientôt disponible" title="Recherche bientôt disponible" disabled>⌕</button>
+      </header>
+
+      <div class="chat-messages" aria-live="polite">
+        @if(messages.length === 0)
+          <div class="chat-empty">
+            <div class="empty-illustration empty-illustration--small" aria-hidden="true">
+              <span class="empty-illustration__back"></span><span class="empty-illustration__front">✳</span>
+            </div>
+            <h2>La conversation commence ici</h2>
+            <p>Envoyez le premier message à vos collègues de Kadea Academy.</p>
+          </div>
+        @end
+        @each(message in messages)
+          <article class="message {{ message.user_id === currentUserId ? 'message--mine' : 'message--received' }}">
+            @if(message.user_id !== currentUserId)
+              <span class="message-avatar" aria-hidden="true">{{ (message.author_name || 'M').charAt(0).toUpperCase() }}</span>
+            @end
+            <div class="message__content">
+              @if(message.user_id !== currentUserId)
+                <strong class="message__author">{{ message.author_name || 'Membre' }}</strong>
+              @end
+              <p>{{ message.deleted_at ? 'Ce message a été supprimé.' : message.body }}</p>
+              <time>{{ message.timeLabel }}</time>
+            </div>
+          </article>
+        @end
+      </div>
+
+      <footer class="chat-compose">
+        @form({ route: 'messages.store', routeParams: { id: conversation.id }, method: 'POST', class: 'compose-form' })
+          <button class="icon-button attach-button" type="button" aria-label="Partage de fichiers bientôt disponible" title="Partage de fichiers bientôt disponible" disabled>＋</button>
+          <label class="sr-only" for="message-body">Votre message</label>
+          <textarea id="message-body" name="body" rows="1" maxlength="5000" placeholder="Écrivez votre message..." required></textarea>
+          <button class="send-button send-button--round" type="submit" aria-label="Envoyer le message" title="Envoyer">➤</button>
+        @end
+      </footer>
+    </section>
+  </main>
+@end

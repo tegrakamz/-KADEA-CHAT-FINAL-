@@ -1,0 +1,16 @@
+@let(pageTitle = $props.get('title'))
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FAFAF8" />
+    <title>{{ pageTitle ? `${pageTitle} - Kadea Chat` : 'Kadea Chat' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('dumper')
+  </head>
+  <body class="messenger-body">
+    <div class="app-main">{{{ await $slots.main() }}}</div>
+    @include('partials/flash_alerts')
+  </body>
+</html>
