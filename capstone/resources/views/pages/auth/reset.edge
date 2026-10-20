@@ -1,0 +1,17 @@
+@layouts.auth()
+  <h1 class="auth__title">Nouveau mot de passe.</h1>
+  <p class="auth__sub">Choisissez au moins 8 caractères.</p>
+  @form({ action: '/reset-password/' + token, method: 'POST', class: 'auth__form', 'data-confirm-action': 'Réinitialiser votre mot de passe ? Vos sessions existantes seront déconnectées.', 'data-confirm-title': 'Réinitialiser le mot de passe' })
+    @field.root({ name: 'password' })
+      @!field.label({ text: 'Nouveau mot de passe' })
+      @!input.control({ type: 'password', autocomplete: 'new-password', required: true })
+      @!field.error()
+    @end
+    @field.root({ name: 'passwordConfirmation' })
+      @!field.label({ text: 'Confirmer le mot de passe' })
+      @!input.control({ type: 'password', autocomplete: 'new-password', required: true })
+      @!field.error()
+    @end
+    @!button({ text: 'Enregistrer', type: 'submit', block: true })
+  @end
+@end

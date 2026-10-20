@@ -1,11 +1,14 @@
 # Dependencies and AdonisJS build
 node_modules
+storage/uploads/
 build
 tmp/*
 !tmp/.gitkeep
 
 # Secrets
 .env
+.env.production
+.env.staging
 .env.local
 .env.production.local
 .env.development.local

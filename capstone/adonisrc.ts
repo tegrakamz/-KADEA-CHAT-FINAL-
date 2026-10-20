@@ -110,6 +110,7 @@ export default defineConfig({
   |
   */
   metaFiles: [
+    { pattern: 'scripts/start-production.mjs', reloadServer: false },
     {
       pattern: 'resources/views/**/*.edge',
       reloadServer: false,

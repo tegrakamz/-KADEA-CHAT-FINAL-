@@ -1,0 +1,75 @@
+@layouts.app({ title: 'Mon profil' })
+  <main class="settings-page profile-page">
+    <a class="btn btn--primary" href="/dashboard">← Retour aux discussions</a>
+    <header class="profile-identity">
+      <p class="eyebrow">MON PROFIL</p>
+      <div class="profile-photo-picker">
+      @if(profile.avatar)
+        <img class="profile-photo" src="/users/{{ user.id }}/avatar?v={{ user.updatedAt?.toMillis() || 0 }}" alt="Ma photo de profil" />
+      @else
+        <span class="profile-photo profile-photo--initials" aria-label="Photo de profil non renseignée">{{ user.initials }}</span>
+      @end
+        <button type="button" class="profile-photo-add" data-pick-profile-photo aria-label="Changer ma photo de profil" title="Changer ma photo de profil">+</button>
+      </div>
+      @form({ action: '/profile/avatar', method: 'POST', enctype: 'multipart/form-data', id: 'quick-avatar-form' })
+        <input hidden id="quick-avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Nouvelle photo de profil" />
+      @end
+      <p class="inline-error" id="quick-avatar-error" role="alert"></p>
+      <h1>{{ user.fullName || 'Mon profil' }}</h1>
+      <p class="profile-email">{{ user.email }}</p>
+    </header>
+    <details class="profile-accordion" id="edit-profile">
+      <summary><h2 id="edit-profile-title">Modifier le profil</h2><span class="profile-chevron" aria-hidden="true">
+        @svg('lucide:chevron-down', { width: 18, height: 18 })
+      </span></summary>
+      <div class="profile-accordion__content">
+      @form({ action: '/profile', method: 'POST', enctype: 'multipart/form-data', class: 'dialog-form' })
+        <label for="fullName">Nom complet</label>
+        @field.root({ name: 'fullName' })
+          @!input.control({ value: user.fullName, required: true, minlength: 2, maxlength: 100, autocomplete: 'name' })
+          @!field.error()
+        @end
+        <label for="avatar">Photo (JPG, PNG, WebP — 2 Mo maximum)</label>
+        <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" />
+        <button class="send-button" type="submit">Enregistrer le profil</button>
+      @end
+      </div>
+    </details>
+    <details class="profile-accordion">
+      <summary><h2>Changer le mot de passe</h2><span class="profile-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="profile-accordion__content">
+        @form({ action: '/profile/password', method: 'POST', class: 'dialog-form', 'data-confirm-action': 'Changer votre mot de passe ? Vos autres sessions seront déconnectées.', 'data-confirm-title': 'Changer le mot de passe' })
+          <label for="currentPassword">Mot de passe actuel</label>
+          @field.root({ name: 'currentPassword' })
+            @!input.control({ type: 'password', autocomplete: 'current-password', required: true })
+            @!field.error()
+          @end
+          <label for="password">Nouveau mot de passe</label>
+          @field.root({ name: 'password' })
+            @!input.control({ type: 'password', autocomplete: 'new-password', required: true, minlength: 8, maxlength: 128 })
+            @!field.error()
+          @end
+          <label for="passwordConfirmation">Confirmer le nouveau mot de passe</label>
+          @field.root({ name: 'passwordConfirmation' })
+            @!input.control({ type: 'password', autocomplete: 'new-password', required: true, minlength: 8, maxlength: 128 })
+            @!field.error()
+          @end
+          <button class="send-button" type="submit">Changer le mot de passe</button>
+        @end
+      </div>
+    </details>
+    <details class="profile-accordion">
+      <summary><h2>Contacts bloqués</h2><span class="profile-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="profile-accordion__content">
+        @if(blocked.length === 0)
+          <p class="profile-empty">Aucun contact bloqué</p>
+        @end
+        @each(person in blocked)
+          @form({ action: '/users/' + person.id + '/unblock', method: 'POST', class: 'member-row', 'data-confirm-action': 'Débloquer ' + person.full_name + ' ? Les messages privés seront de nouveau autorisés si cette personne ne vous a pas bloqué.', 'data-confirm-title': 'Débloquer cette personne' })
+            <span>{{ person.full_name }}</span><button class="send-button" type="submit">Débloquer</button>
+          @end
+        @end
+      </div>
+    </details>
+  </main>
+@end

@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:3333:3333"
+    volumes:
+      - uploads:/data/uploads
+    restart: unless-stopped
+
+volumes:
+  uploads:

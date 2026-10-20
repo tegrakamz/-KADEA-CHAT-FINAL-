@@ -1,4 +1,7 @@
 import Alpine from 'alpinejs'
+import './theme.js'
+import './chat.js'
+import './interface.js'
 
 Alpine.data('alert', function () {
   return {

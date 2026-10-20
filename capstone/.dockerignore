@@ -1,0 +1,10 @@
+node_modules
+build
+.env
+.env.*
+.git
+.adonisjs
+tmp
+storage
+public/assets
+npm-debug.log

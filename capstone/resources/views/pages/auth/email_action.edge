@@ -1,0 +1,28 @@
+@layouts.auth()
+  <h1 class="auth__title">{{ reset ? 'Mot de passe oublié ?' : 'Confirmez votre adresse.' }}</h1>
+  @if(localMail)
+    <p class="auth__sub" role="status"><strong>Mode local : aucun e-mail réel n’est envoyé.</strong> Le message et son lien sont enregistrés dans <code>capstone/tmp/mail</code>. Pour recevoir un e-mail dans votre boîte, configurez Resend puis redémarrez le serveur.</p>
+  @else
+    <p class="auth__sub">{{ reset ? 'Recevez un lien pour choisir un nouveau mot de passe.' : 'Consultez votre boîte de réception et vos spam. Vous pouvez demander un nouveau lien ci-dessous.' }}</p>
+  @end
+  @if(!reset && pending)
+    <p class="auth__sub"><strong>Compte en attente : {{ pending.full_name }}</strong><br />{{ pending.email }}</p>
+  @end
+  @if(!reset && testMail)
+    <p class="auth__sub" role="status">Mode démonstration : les confirmations sont envoyées à la boîte de test configurée sur le serveur. Ce mode ne vérifie pas la possession de l’adresse d’inscription.</p>
+  @end
+  @form({ action: reset ? '/forgot-password' : '/verify-email', method: 'POST', class: 'auth__form' })
+    @if(reset || !pending)
+    @field.root({ name: 'email' })
+      @!field.label({ text: reset ? 'Adresse e-mail' : 'Adresse e-mail utilisée à l’inscription' })
+      @!input.control({ type: 'email', autocomplete: 'email', required: true })
+      @!field.error()
+    @end
+    @end
+    @!button({ text: reset ? 'Envoyer le lien' : 'Renvoyer le lien de confirmation', type: 'submit', block: true })
+  @end
+  @if(!reset && pending)
+    <p class="auth__foot"><a href="/verify-email?change=1">Confirmer un autre compte</a></p>
+  @end
+  <p class="auth__foot"><a href="/login">Retour à la connexion</a></p>
+@end

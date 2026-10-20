@@ -2,6 +2,7 @@
 <html lang="fr" data-theme="light">
   <head>
     <meta charset="utf-8" />
+    <script src="/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#FAFAF8" />
     <title>Kadea Chat · Votre espace d’échange</title>
@@ -11,8 +12,18 @@
   <body class="auth-body">
     <main class="auth-page">
       <div class="auth-card">
-        <div class="auth-card__brand">@!logo({ size: 38 })</div>
+        <div class="auth-card__brand">
+          @!logo({ size: 38 })
+        </div>
         <div class="auth__form-wrap">{{{ await $slots.main() }}}</div>
+        @if(auth.user)
+          <aside class="auth-session-notice">
+            <p>Un compte est déjà connecté dans ce navigateur. Pour utiliser un autre compte, déconnectez-vous d’abord.</p>
+            @form({ action: '/logout', method: 'POST', 'data-confirm-action': 'Vous déconnecter pour utiliser un autre compte ?', 'data-confirm-title': 'Changer de compte' })
+              <button type="submit" class="btn btn--secondary">Se déconnecter pour changer de compte</button>
+            @end
+          </aside>
+        @end
         <p class="auth-card__note">Un espace de discussion pour la communauté Kadea Academy.</p>
       </div>
       <p class="auth-page__footer">KADEA ACADEMY <span>·</span> KADEA CHAT</p>

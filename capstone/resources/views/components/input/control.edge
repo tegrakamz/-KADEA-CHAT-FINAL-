@@ -3,6 +3,9 @@
   ? $context.oldValue || $props.get('value') || ''
   : $props.get('value') || '')
 @let(classes = ['field__input'])
+@if($props.get('type') === 'password')
+  <div class="password-control" x-data="{ visible: false }">
+@end
 
 <input {{
   $props
@@ -24,5 +27,17 @@
         ($context.oldValue === inputValue || $context.oldValue === 'on')
       ),
     })
+    .mergeIf($props.get('type') === 'password', { 'x-bind:type': "visible ? 'text' : 'password'" })
     .toAttrs()
 }} />
+@if($props.get('type') === 'password')
+    <button type="button" class="password-toggle" x-on:click="visible = !visible" x-bind:aria-pressed="visible" x-bind:title="visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" aria-label="Afficher ou masquer le mot de passe" aria-controls="{{ $context.id }}">
+      <span x-show="visible" x-cloak aria-hidden="true" data-password-visible>
+        @svg('lucide:eye', { width: 20, height: 20 })
+      </span>
+      <span x-show="!visible" aria-hidden="true" data-password-hidden>
+        @svg('lucide:eye-off', { width: 20, height: 20 })
+      </span>
+    </button>
+  </div>
+@end

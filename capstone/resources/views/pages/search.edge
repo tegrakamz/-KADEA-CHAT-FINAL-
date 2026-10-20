@@ -1,0 +1,22 @@
+@layouts.app({ title: 'Rechercher des messages' })
+  <main class="settings-page">
+    <a class="btn btn--primary" href="/dashboard">← Retour aux discussions</a>
+    <h1>Rechercher des messages</h1>
+    <form action="/search" method="GET" class="dialog-form">
+      <label for="query">Mot ou expression (2 caractères minimum)</label>
+      <input id="query" name="q" value="{{ query }}" minlength="2" maxlength="100" required />
+      <button class="send-button" type="submit">Rechercher</button>
+    </form>
+    <p>{{ results.length }} résultat(s), jusqu’à 50 messages récents.</p>
+    @if(query.length >= 2 && results.length === 0)
+      <div class="search-empty"><h2>Aucun message trouvé</h2><p>Essayez un autre mot dans vos discussions.</p></div>
+    @elseif(query.length < 2)
+      <div class="search-empty"><h2>Retrouvez le fil d’un échange</h2><p>Saisissez au moins deux caractères pour rechercher dans vos messages.</p></div>
+    @end
+    @each(result in results)
+      <a class="search-result" href="/conversations/{{ result.conversation_id }}?before={{ result.id + 1 }}#message-{{ result.id }}">
+        <strong>{{ result.full_name }}</strong><p>{{ result.body }}</p><span>Ouvrir la discussion →</span>
+      </a>
+    @end
+  </main>
+@end

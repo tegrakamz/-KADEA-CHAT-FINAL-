@@ -2,6 +2,7 @@
 <html lang="fr" data-theme="light">
   <head>
     <meta charset="utf-8" />
+    <script src="/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#FAFAF8" />
     <title>Kadea Chat · Échangez simplement</title>
@@ -12,18 +13,12 @@
     <header class="marketing-header">
       @!logo({ size: 36 })
       <nav>
-        @if(auth.user)
-          @link({ route: 'dashboard', class: 'gold-button' })
-            Aller aux messages
-          @end
-        @else
           @link({ route: 'session.create', class: 'marketing-login' })
             Connexion
           @end
           @link({ route: 'new_account.create', class: 'gold-button' })
             Créer un compte
           @end
-        @end
       </nav>
     </header>
     {{{ await $slots.main() }}}

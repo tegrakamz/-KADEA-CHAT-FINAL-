@@ -3,6 +3,7 @@
 <html lang="fr" data-theme="light">
   <head>
     <meta charset="utf-8" />
+    <script src="/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#FAFAF8" />
     <title>{{ pageTitle ? `${pageTitle} - Kadea Chat` : 'Kadea Chat' }}</title>
@@ -11,6 +12,22 @@
   </head>
   <body class="messenger-body">
     <div class="app-main">{{{ await $slots.main() }}}</div>
+    <p id="connection-status" class="connection-status" role="status" hidden></p>
+    <dialog id="profile-drawer" class="side-drawer" aria-labelledby="drawer-title">
+      <header class="drawer-header"><h2 id="drawer-title">Mon profil</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fermer mon profil">×</button></header>
+      <iframe title="Modifier mon profil" class="profile-frame"></iframe>
+      <p class="drawer-loading" role="status">Chargement du profil…</p>
+    </dialog>
     @include('partials/flash_alerts')
+    <dialog id="logout-dialog" class="chat-dialog" aria-labelledby="logout-title" aria-describedby="logout-description">
+      <section class="dialog-card">
+        <h2 id="logout-title">Se déconnecter</h2>
+        <p id="logout-description">Êtes-vous sûr de vouloir vous déconnecter ?</p>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn--secondary" data-close-dialog autofocus>Non</button>
+          <button type="button" class="btn btn--primary" data-confirm-logout>Oui</button>
+        </div>
+      </section>
+    </dialog>
   </body>
 </html>

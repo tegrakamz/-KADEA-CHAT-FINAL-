@@ -1,0 +1,9 @@
+<span class="group-avatar {{ $props.get('className', '') }}" data-group-avatar style="--avatar-columns: {{ Math.ceil(Math.sqrt($props.get('members', []).length || 1)) }}" role="img" aria-label="Mosaïque des membres du groupe">
+  @each(person in $props.get('members', []))
+    @if(person.avatar)
+      <img src="/users/{{ person.id }}/avatar?v={{ person.avatar }}" alt="" />
+    @else
+      <span aria-hidden="true">{{ (person.fullName || 'M').charAt(0).toUpperCase() }}</span>
+    @end
+  @end
+</span>

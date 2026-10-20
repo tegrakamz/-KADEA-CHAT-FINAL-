@@ -15,14 +15,17 @@ const dbConfig = defineConfig({
         user: env.get('DB_USER') || 'postgres',
         password: env.get('DB_PASSWORD').release(),
         database: env.get('DB_DATABASE') || 'kadea_chat',
-        ssl: env.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+        ssl:
+          env.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: true, ca: env.get('DB_SSL_CA')?.replaceAll('\\n', '\n') }
+            : false,
       },
       migrations: {
         naturalSort: true,
         paths: ['database/migrations'],
       },
       schemaGeneration: {
-        enabled: true,
+        enabled: app.inDev,
         rulesPaths: ['./database/schema_rules.js'],
       },
       debug: app.inDev,

@@ -1,52 +1,153 @@
 @layouts.app({ title: conversationTitle })
-  <main class="messenger-layout messenger-layout--conversation">
+  <main class="messenger-layout messenger-layout--conversation" data-chat data-user-id="{{ currentUserId }}" data-conversation-id="{{ conversation.id }}" data-history="{{ historyMode ? 'true' : 'false' }}" data-removed="{{ isRemoved ? 'true' : 'false' }}" data-is-admin="{{ conversation.is_admin ? 'true' : 'false' }}">
     @include('partials/conversation_sidebar')
     <section class="chat-panel">
       <header class="chat-header">
-        <a class="chat-back" href="{{ route('dashboard') }}" aria-label="Retour aux discussions">←</a>
-        <span class="conversation-avatar conversation-avatar--large" aria-hidden="true">{{ conversationTitle.charAt(0).toUpperCase() }}</span>
+        <a class="chat-back" href="/dashboard" aria-label="Retour aux discussions">←</a>
+        @if(conversation.type === 'group')
+          @!groupAvatar({ members: members, className: 'conversation-avatar conversation-avatar--large' })
+        @elseif(conversation.type === 'private' && peer?.avatar)
+          <img class="conversation-avatar conversation-avatar--large" src="/users/{{ peer.id }}/avatar?v={{ peer.avatar }}" alt="" />
+        @else
+          <span class="conversation-avatar conversation-avatar--large {{ conversation.type === 'group' ? 'conversation-avatar--group' : '' }}" aria-hidden="true">
+            @if(conversation.type === 'group')
+              @svg('lucide:users', { width: 22, height: 22 })
+            @else
+              {{ conversationTitle.charAt(0).toUpperCase() }}
+            @end
+          </span>
+        @end
         <div class="chat-header__identity">
           <p class="eyebrow">{{ conversation.type === 'group' ? 'GROUPE' : 'CONVERSATION PRIVÉE' }}</p>
-          <h1>{{ conversationTitle }}</h1>
-          <p class="chat-header__status">{{ members.length }} membre{{ members.length > 1 ? 's' : '' }}</p>
+          <h1>
+            @if(conversation.type === 'private' && peer)
+              <a href="/users/{{ peer.id }}/profile">{{ conversationTitle }}</a>
+            @else
+              {{ conversationTitle }}
+            @end
+          </h1>
+          @if(conversation.type === 'group')
+            <p class="chat-header__status">{{ members.length }} membres</p>
+          @end
         </div>
-        <button class="icon-button chat-search" type="button" aria-label="Recherche dans la discussion bientôt disponible" title="Recherche bientôt disponible" disabled>⌕</button>
+        <a class="icon-button" href="/search" aria-label="Rechercher un message">
+          @svg('lucide:search', { width: 19, height: 19 })
+        </a>
+        <button class="members-menu btn btn--secondary" type="button" data-open-dialog="members-dialog" aria-label="Informations de la discussion">{{ conversation.type === 'group' ? 'Membres' : 'Infos' }}</button>
       </header>
-
+      <p class="group-addition-notice" id="group-addition-notice" role="status" {{ conversation.type === 'group' && !isRemoved && conversation.added_by_name ? '' : 'hidden' }}>{{ conversation.added_by_name ? conversation.added_by_name + ' vous a ajout'+ 'é' +' au groupe.' : '' }}</p>
       <div class="chat-messages" aria-live="polite">
+        @if(canLoadOlder)
+          <a class="history-link" href="/conversations/{{ conversation.id }}?before={{ messages[0].id }}">Voir les messages précédents</a>
+        @end
+        @if(historyMode)
+          <a class="history-link" href="/conversations/{{ conversation.id }}">Revenir aux derniers messages</a>
+        @end
         @if(messages.length === 0)
-          <div class="chat-empty">
-            <div class="empty-illustration empty-illustration--small" aria-hidden="true">
-              <span class="empty-illustration__back"></span><span class="empty-illustration__front">✳</span>
-            </div>
-            <h2>La conversation commence ici</h2>
-            <p>Envoyez le premier message à vos collègues de Kadea Academy.</p>
-          </div>
+          <div class="chat-empty"><h2>La conversation commence ici</h2><p>Envoyez votre premier message.</p></div>
         @end
         @each(message in messages)
-          <article class="message {{ message.user_id === currentUserId ? 'message--mine' : 'message--received' }}">
-            @if(message.user_id !== currentUserId)
-              <span class="message-avatar" aria-hidden="true">{{ (message.author_name || 'M').charAt(0).toUpperCase() }}</span>
-            @end
+          @if(message.event_kind)
+            <div class="group-system-event" id="message-{{ message.id }}" role="status"><span>{{ message.body }}</span><time>{{ message.timeLabel }}</time></div>
+          @else
+          <article id="message-{{ message.id }}" class="message {{ message.user_id === currentUserId ? 'message--mine' : 'message--received' }}">
+            <div class="message-stack">
             <div class="message__content">
               @if(message.user_id !== currentUserId)
-                <strong class="message__author">{{ message.author_name || 'Membre' }}</strong>
+                <a class="message__author" href="/users/{{ message.user_id }}/profile">{{ message.author_name || 'Membre' }}</a>
               @end
               <p>{{ message.deleted_at ? 'Ce message a été supprimé.' : message.body }}</p>
+            </div>
+            <div class="message-timestamp">
               <time>{{ message.timeLabel }}</time>
+              <span data-message-actions="{{ message.id }}" data-mine="{{ message.user_id === currentUserId ? 'true' : 'false' }}" data-created-at="{{ new Date(message.created_at).toISOString() }}" data-deleted="{{ message.deleted_at ? 'true' : 'false' }}"></span>
+              @if(message.edited_at)
+                <span class="message-edited">Modifié</span>
+              @end
+            </div>
             </div>
           </article>
+          @end
         @end
       </div>
-
       <footer class="chat-compose">
-        @form({ route: 'messages.store', routeParams: { id: conversation.id }, method: 'POST', class: 'compose-form' })
-          <button class="icon-button attach-button" type="button" aria-label="Partage de fichiers bientôt disponible" title="Partage de fichiers bientôt disponible" disabled>＋</button>
-          <label class="sr-only" for="message-body">Votre message</label>
-          <textarea id="message-body" name="body" rows="1" maxlength="5000" placeholder="Écrivez votre message..." required></textarea>
-          <button class="send-button send-button--round" type="submit" aria-label="Envoyer le message" title="Envoyer">➤</button>
+      <p class="group-removal-notice" id="group-removal-notice" role="status" {{ isRemoved ? '' : 'hidden' }}>{{ isRemoved ? (conversation.removed_by_name || 'Un administrateur') + ' vous a retiré du groupe. Vous pouvez consulter l’historique et les membres, mais vous ne pouvez plus envoyer de messages.' : '' }}</p>
+        <p id="chat-error" role="alert" class="inline-error">{{ isBlocked ? 'Cette conversation est bloquée. Gérez les blocages depuis votre profil.' : '' }}</p>
+        @if(!historyMode)
+          @form({ route: 'messages.store', routeParams: { id: conversation.id }, method: 'POST', class: 'compose-form', id: 'message-form' })
+            <button class="icon-button" type="button" data-open-dialog="expression-dialog" aria-label="Émojis et stickers" {{ isRemoved || isBlocked ? 'disabled' : '' }}>
+              @svg('lucide:smile', { width: 22, height: 22 })
+            </button>
+            <label class="sr-only" for="message-body">Votre message</label>
+            <textarea id="message-body" name="body" rows="1" maxlength="5000" placeholder="{{ isRemoved ? 'Vous ne faites plus partie de ce groupe' : 'Écrivez votre message...' }}" {{ isRemoved || isBlocked ? 'disabled' : '' }} required></textarea>
+            <button class="send-button send-button--round" type="submit" aria-label="Envoyer le message" {{ isRemoved || isBlocked ? 'disabled' : '' }}>➤</button>
+          @end
         @end
       </footer>
     </section>
   </main>
+  <dialog id="members-dialog" class="side-drawer members-drawer" aria-labelledby="members-title">
+    <header class="drawer-header"><h2 id="members-title">Informations de la discussion</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fermer les informations">×</button></header>
+    <div class="members-drawer__body">
+      <header class="profile-identity">
+        @if(conversation.type === 'group')
+          @!groupAvatar({ members: members, className: 'profile-photo' })
+        @else
+          <span class="profile-photo profile-photo--initials" aria-hidden="true">{{ conversationTitle.charAt(0).toUpperCase() }}</span>
+        @end
+        <h2>{{ conversationTitle }}</h2>
+        <p class="profile-email">{{ conversation.type === 'group' ? 'Groupe · ' + members.length + ' membres' : 'Discussion privée' }}</p>
+      </header>
+      <h3>Participants</h3>
+            <div data-group-members>
+            @each(member in members)
+              <div class="member-row">
+                @if(member.avatar)
+                  <img class="member-photo" src="/users/{{ member.id }}/avatar" alt="" />
+                @end
+                <span><a class="member-profile-link" href="/users/{{ member.id }}/profile">{{ member.fullName || member.email }}</a>{{ member.is_admin && conversation.type === 'group' ? ' · Admin' : '' }}</span>
+                @if(member.id !== currentUserId)
+                  @form({ action: '/users/' + member.id + '/conversation', method: 'POST' })
+                    <button type="submit" class="icon-button" aria-label="Envoyer un message à {{ member.fullName || 'ce membre' }}">
+                      @svg('lucide:message-circle', { width: 18, height: 18 })
+                    </button>
+                  @end
+                @end
+                @if(conversation.type === 'group' && conversation.is_admin && !member.is_admin)
+                  @form({ action: '/conversations/' + conversation.id + '/members/' + member.id + '/promote', method: 'POST', 'data-confirm-action': 'Nommer ' + (member.fullName || member.email) + ' administrateur ? Cette personne pourra ajouter et retirer des membres, et nommer d’autres administrateurs.', 'data-confirm-title': 'Nommer un administrateur' })
+                    <button class="btn btn--secondary" type="submit">Nommer administrateur</button>
+                  @end
+                  @form({ action: '/conversations/' + conversation.id + '/members/' + member.id + '/remove', method: 'POST', 'data-confirm-action': 'Retirer ' + (member.fullName || member.email) + ' de ce groupe ? Cette personne perdra l’accès à la discussion.', 'data-confirm-title': 'Retirer ce membre' })
+                    <button class="text-danger" type="submit">Retirer</button>
+                  @end
+                @end
+                @if(conversation.type === 'private' && member.id !== currentUserId)
+                  @form({ action: '/users/' + member.id + '/block', method: 'POST', 'data-confirm-action': 'Bloquer ' + (member.fullName || member.email) + ' ? Vous ne pourrez plus échanger de messages privés tant que le blocage reste actif.', 'data-confirm-title': 'Bloquer cette personne' })
+                    <button class="text-danger" type="submit">Bloquer</button>
+                  @end
+                @end
+              </div>
+            @end
+            </div>
+            @if(conversation.type === 'group' && conversation.is_admin)
+              @form({ action: '/conversations/' + conversation.id + '/members', method: 'POST', class: 'dialog-form', 'data-confirm-action': 'Ajouter cette personne au groupe ? Elle verra uniquement les messages envoyés à partir de son ajout.', 'data-confirm-title': 'Autoriser l’accès au groupe' })
+                <label for="member-email">Ajouter un membre</label>
+                <input id="member-email" name="email" type="email" required placeholder="Adresse e-mail confirmée" />
+                <button class="send-button" type="submit">Ajouter</button>
+              @end
+            @end
+
+    </div>
+  </dialog>
+  <dialog id="expression-dialog" class="chat-dialog expression-dialog" aria-labelledby="expression-title">
+    <section class="dialog-card">
+      <button type="button" class="dialog-close icon-button" data-close-dialog aria-label="Fermer les émojis">×</button>
+      <h2 id="expression-title">Émojis et stickers</h2>
+      <p>Ajoutez un émoji au texte ou envoyez un sticker directement.</p>
+      <h3>Émojis</h3><div class="expression-grid" data-emoji-grid></div>
+      <h3>Stickers</h3><div class="expression-grid expression-grid--stickers" data-sticker-grid></div>
+      <p class="inline-error" data-expression-error role="alert"></p>
+    </section>
+  </dialog>
+
 @end

@@ -1,90 +1,113 @@
-<aside class="conversation-sidebar" aria-label="Navigation et discussions" x-data="{ groupOpen: false }">
+<aside class="conversation-sidebar" aria-label="Navigation et discussions">
   <div class="sidebar-topline">
-    @!logo({ size: 32 })
+    @!logo({ size: 34 })
     <div class="sidebar-actions">
-      <button class="icon-button group-action" type="button" aria-label="Créer un groupe" title="Créer un groupe" x-on:click="groupOpen = true">♧</button>
+ <button class="icon-button group-action" type="button" data-open-dialog="group-dialog" aria-label="Créer un groupe" title="Créer un groupe"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m3 4v6m-3-3h6"/></svg></button>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Activer le mode sombre" title="Changer de thème">
+        <span data-theme-moon aria-hidden="true">
+          @svg('lucide:moon', { width: 20, height: 20 })
+        </span>
+        <span data-theme-sun aria-hidden="true" hidden>
+          @svg('lucide:sun', { width: 20, height: 20 })
+        </span>
+      </button>
+
       @form({ route: 'session.destroy', method: 'POST', class: 'logout-form' })
-        <button class="icon-button" type="submit" aria-label="Se déconnecter" title="Se déconnecter">↪</button>
+        <button class="icon-button" type="submit" aria-label="Se déconnecter" title="Se déconnecter"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 4H4v16h5m5-12 4 4-4 4m-6-4h13"/></svg></button>
       @end
     </div>
   </div>
-
   <div class="profile-strip">
-    <span class="profile-avatar">{{ (user.fullName || user.email).charAt(0).toUpperCase() }}</span>
-    <span class="profile-copy"><strong>{{ user.fullName || user.email }}</strong><span><i class="online-dot"></i> Connecté</span></span>
-    <button class="icon-button profile-settings" type="button" aria-label="Paramètres bientôt disponibles" title="Paramètres bientôt disponibles" disabled>⚙</button>
+    @if(user.avatar)
+      <img class="profile-avatar" src="/users/{{ user.id }}/avatar" alt="" />
+    @else
+      <span class="profile-avatar">{{ user.initials }}</span>
+    @end
+    <span class="profile-copy"><strong>{{ user.fullName || user.email }}</strong><span>Mon espace Kadea</span></span>
+    <a class="icon-button profile-settings" href="/profile" data-profile-open aria-label="Mon profil" title="Mon profil"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg></a>
   </div>
-
   <label class="conversation-search">
-    <span aria-hidden="true">⌕</span>
-    <input type="search" placeholder="Rechercher une discussion..." aria-label="Rechercher une discussion" x-data x-on:input="$dispatch('conversation-filter', $event.target.value)" />
-    <kbd>/</kbd>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg>
+    <input type="search" placeholder="Rechercher une discussion…" aria-label="Rechercher une discussion" />
   </label>
-
   <div class="conversation-list-heading">
     <h1>Messages <span>{{ conversations.length }}</span></h1>
-    <span class="list-label">RÉCENTES</span>
+    <a class="list-label" href="/search">Rechercher un message</a>
   </div>
-
-  <nav class="conversation-list" aria-label="Liste des discussions" x-data="{ query: '' }" x-on:conversation-filter.window="query = $event.detail.toLowerCase()">
-    @if(conversations.length === 0)
-      <div class="sidebar-empty">
-        <span>✳</span>
-        <p>Vos discussions apparaîtront ici. Commencez par écrire à un membre de l’équipe.</p>
-      </div>
-    @else
-      @each(conversation in conversations)
-        <a
-          class="conversation-row {{ currentConversationId === conversation.id ? 'conversation-row--active' : '' }}"
-          href="{{ route('conversations.show', { id: conversation.id }) }}"
-          data-conversation="{{ conversation.displayName.toLowerCase() }} {{ conversation.lastMessage?.body?.toLowerCase() || '' }}"
-          x-show="!query || $el.dataset.conversation.includes(query)"
-          x-cloak
-        >
-          <span class="conversation-avatar" aria-hidden="true">{{ conversation.displayName.charAt(0).toUpperCase() }}</span>
-          <span class="conversation-row__content">
-            <span class="conversation-row__top"><strong>{{ conversation.displayName }}</strong><time>{{ conversation.lastMessageTime }}</time></span>
-            <span class="conversation-row__preview">{{ conversation.lastMessage?.body || 'Démarrer la conversation' }}</span>
+  <nav class="conversation-list" aria-label="Liste des discussions">
+    @each(conversation in conversations)
+      <a class="conversation-row {{ currentConversationId === conversation.id ? 'conversation-row--active' : '' }}" href="{{ route('conversations.show', { id: conversation.id }) }}" data-conversation="{{ conversation.displayName.toLowerCase() }} {{ conversation.lastMessage?.body?.toLowerCase() || '' }}">
+        @if(conversation.type === 'group')
+          @!groupAvatar({ members: conversation.avatarMembers || [], className: 'conversation-avatar' })
+        @elseif(conversation.type === 'private' && conversation.other_avatar)
+          <img class="conversation-avatar" src="/users/{{ conversation.other_user_id }}/avatar?v={{ conversation.other_avatar }}" alt="" />
+        @else
+          <span class="conversation-avatar {{ conversation.type === 'group' ? 'conversation-avatar--group' : '' }}" aria-hidden="true">
+            @if(conversation.type === 'group')
+              @svg('lucide:users', { width: 21, height: 21 })
+            @else
+              {{ conversation.displayName.charAt(0).toUpperCase() }}
+            @end
           </span>
-        </a>
-      @end
+        @end
+        <span class="conversation-row__content">
+          <span class="conversation-row__top"><strong>{{ conversation.displayName }}</strong><time>{{ conversation.lastMessageTime }}</time></span>
+          <span class="conversation-row__preview">{{ conversation.lastMessage?.body || 'Démarrer la conversation' }}</span>
+          @if(conversation.unread)
+            <span class="unread-badge">{{ conversation.unread }}</span>
+          @end
+        </span>
+      </a>
     @end
   </nav>
-
-  <div class="sidebar-footer" x-data="{ composeOpen: false }">
-    <button class="new-chat-button" type="button" x-on:click="composeOpen = true">
-      <span aria-hidden="true">＋</span> Nouvelle discussion
-    </button>
+  <p class="sidebar-empty" id="conversation-empty" role="status" {{ conversations.length ? 'hidden' : '' }}>Vos discussions commencent ici. Écrivez à un membre de Kadea Academy.</p>
+  <div class="sidebar-footer">
+    <button class="new-chat-button" type="button" data-open-dialog="private-dialog"><span aria-hidden="true">＋</span> Nouvelle discussion</button>
     <p>KADEA ACADEMY <span>·</span> MESSAGERIE</p>
-    <div class="modal-backdrop" x-cloak x-show="composeOpen" x-transition.opacity x-on:keydown.escape.window="composeOpen = false" x-on:click.self="composeOpen = false">
-      <section class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="new-chat-title">
-        <button class="dialog-close icon-button" type="button" x-on:click="composeOpen = false" aria-label="Fermer">×</button>
-        <span class="dialog-icon">＋</span>
-        <h2 id="new-chat-title">Nouvelle discussion</h2>
-        <p>Entrez l’adresse e-mail d’un membre de Kadea Academy.</p>
-        @form({ route: 'conversations.store', method: 'POST', class: 'dialog-form' })
-          <label for="new-chat-email">Adresse e-mail</label>
-          <input id="new-chat-email" name="email" type="email" placeholder="nom@exemple.com" required maxlength="254" />
-          <button class="send-button" type="submit">Démarrer la discussion <span aria-hidden="true">↗</span></button>
-        @end
-      </section>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" x-cloak x-show="groupOpen" x-transition.opacity x-on:keydown.escape.window="groupOpen = false" x-on:click.self="groupOpen = false">
-    <section class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="new-group-title">
-      <button class="dialog-close icon-button" type="button" x-on:click="groupOpen = false" aria-label="Fermer">×</button>
-      <span class="dialog-icon">♧</span>
-      <h2 id="new-group-title">Créer un nouveau groupe</h2>
-      <p>Réunissez plusieurs membres de Kadea Academy dans une même discussion.</p>
-      <div class="dialog-form">
-        <label for="group-name">Nom du groupe</label>
-        <input id="group-name" type="text" placeholder="Ex. Projet Kadea" disabled />
-        <label for="group-members">Adresses e-mail des membres</label>
-        <textarea id="group-members" rows="3" placeholder="Une adresse e-mail par ligne" disabled></textarea>
-        <button class="send-button" type="button" disabled>Créer le groupe <span aria-hidden="true">↗</span></button>
-      </div>
-      <p class="dialog-note">La création et la gestion des groupes arrivent dans la prochaine étape.</p>
-    </section>
   </div>
 </aside>
+<dialog id="private-dialog" class="chat-dialog" aria-labelledby="new-chat-title" data-reopen="{{ old('email') && !old('name') && !old('emails') ? 'true' : 'false' }}">
+  <section class="dialog-card">
+    <button class="dialog-close icon-button" type="button" data-close-dialog aria-label="Fermer">×</button>
+    <p class="eyebrow">NOUVELLE DISCUSSION</p>
+    <h2 id="new-chat-title">Un nouvel échange.</h2>
+    <p>Retrouvez un membre par son nom ou son adresse e-mail.</p>
+    @form({ route: 'conversations.store', method: 'POST', class: 'dialog-form', 'data-loading-form': true })
+      <label for="user-search">Rechercher un membre</label>
+      <input id="user-search" type="search" placeholder="Au moins 2 caractères" autocomplete="off" />
+      <div id="user-results" role="status"></div>
+      @field.root({ name: 'email', id: 'new-chat-email' })
+        @!field.label({ text: 'Adresse e-mail du destinataire' })
+        @!input.control({ type: 'email', placeholder: 'nom@exemple.com', required: true, maxlength: 254 })
+        @!field.error()
+      @end
+      <div class="dialog-actions"><button class="btn btn--secondary" type="button" data-close-dialog>Annuler</button><button class="send-button" type="submit">Démarrer la discussion →</button></div>
+    @end
+  </section>
+</dialog>
+<dialog id="group-dialog" class="chat-dialog" aria-labelledby="new-group-title" data-reopen="{{ old('name') || old('emails') ? 'true' : 'false' }}">
+  <section class="dialog-card">
+    <button class="dialog-close icon-button" type="button" data-close-dialog aria-label="Fermer">×</button>
+    <p class="eyebrow">NOUVELLE DISCUSSION</p>
+    <h2 id="new-group-title">Créer un groupe</h2>
+    <p>Un espace commun pour vos projets et vos idées.</p>
+    @form({ action: '/groups', method: 'POST', class: 'dialog-form', id: 'group-form', 'data-loading-form': true, 'data-confirm-action': 'Créer ce groupe et donner aux membres sélectionnés accès à cette discussion ?', 'data-confirm-title': 'Créer le groupe' })
+      @field.root({ name: 'name', id: 'group-name' })
+        @!field.label({ text: 'Nom du groupe' })
+        @!input.control({ placeholder: 'Ex. Équipe Produit', required: true, minlength: 2, maxlength: 100 })
+        @!field.error()
+      @end
+      <div class="selection-heading"><label for="group-search">Ajouter des membres</label><span id="group-count" aria-live="polite">0 sélectionné</span></div>
+      <input id="group-search" type="search" placeholder="Rechercher par nom ou e-mail…" autocomplete="off" />
+      <div id="group-results" class="member-picker" role="status"><p class="picker-hint">Recherchez des membres pour les sélectionner.</p></div>
+      <div id="selected-members" class="selected-members" aria-label="Membres sélectionnés"></div>
+      @field.root({ name: 'emails', id: 'group-members' })
+        @!field.label({ text: 'Ou ajouter des adresses e-mail' })
+        <textarea id="group-members" name="emails" rows="2" placeholder="Une adresse par ligne, ou séparées par des virgules" required maxlength="5000">{{ old('emails') || '' }}</textarea>
+        @!field.error()
+      @end
+      <p class="dialog-note">Au moins deux autres membres avec une adresse confirmée.</p>
+      <div class="dialog-actions"><button class="btn btn--secondary" type="button" data-close-dialog>Annuler</button><button class="send-button" type="submit">Créer le groupe →</button></div>
+    @end
+  </section>
+</dialog>

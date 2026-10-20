@@ -7,9 +7,28 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AccountTokenSchema extends BaseModel {
+  static $columns = ['expiresAt', 'id', 'purpose', 'tokenHash', 'userId'] as const
+  $columns = AccountTokenSchema.$columns
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare purpose: string
+  @column()
+  declare tokenHash: string
+  @column()
+  declare userId: number
+}
+
 export class ConversationMemberSchema extends BaseModel {
-  static $columns = ['conversationId', 'createdAt', 'id', 'isAdmin', 'userId'] as const
+  static $columns = ['addedBy', 'addedByName', 'conversationId', 'createdAt', 'id', 'isAdmin', 'lastDeliveredAt', 'lastReadAt', 'removedAt', 'removedBy', 'removedByName', 'userId'] as const
   $columns = ConversationMemberSchema.$columns
+  @column()
+  declare addedBy: number | null
+  @column()
+  declare addedByName: string | null
   @column()
   declare conversationId: number
   @column.dateTime({ autoCreate: true })
@@ -18,6 +37,16 @@ export class ConversationMemberSchema extends BaseModel {
   declare id: number
   @column()
   declare isAdmin: boolean
+  @column.dateTime()
+  declare lastDeliveredAt: DateTime | null
+  @column.dateTime()
+  declare lastReadAt: DateTime | null
+  @column.dateTime()
+  declare removedAt: DateTime | null
+  @column()
+  declare removedBy: number | null
+  @column()
+  declare removedByName: string | null
   @column()
   declare userId: number
 }
@@ -39,8 +68,17 @@ export class ConversationSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class MessageHideSchema extends BaseModel {
+  static $columns = ['messageId', 'userId'] as const
+  $columns = MessageHideSchema.$columns
+  @column({ isPrimary: true })
+  declare messageId: number
+  @column()
+  declare userId: number
+}
+
 export class MessageSchema extends BaseModel {
-  static $columns = ['body', 'conversationId', 'createdAt', 'deletedAt', 'id', 'userId'] as const
+  static $columns = ['body', 'conversationId', 'createdAt', 'deletedAt', 'editedAt', 'eventActorName', 'eventKind', 'eventTargetName', 'id', 'userId'] as const
   $columns = MessageSchema.$columns
   @column()
   declare body: string
@@ -50,19 +88,51 @@ export class MessageSchema extends BaseModel {
   declare createdAt: DateTime
   @column.dateTime()
   declare deletedAt: DateTime | null
+  @column.dateTime()
+  declare editedAt: DateTime | null
+  @column()
+  declare eventActorName: string | null
+  @column()
+  declare eventKind: string | null
+  @column()
+  declare eventTargetName: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
   declare userId: number
 }
 
+export class RateLimitSchema extends BaseModel {
+  static $columns = ['attempts', 'expiresAt', 'key'] as const
+  $columns = RateLimitSchema.$columns
+  @column()
+  declare attempts: number
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare key: string
+}
+
+export class UserBlockSchema extends BaseModel {
+  static $columns = ['blockedUserId', 'userId'] as const
+  $columns = UserBlockSchema.$columns
+  @column()
+  declare blockedUserId: number
+  @column({ isPrimary: true })
+  declare userId: number
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['avatar', 'createdAt', 'email', 'emailVerifiedAt', 'fullName', 'id', 'password', 'updatedAt'] as const
   $columns = UserSchema.$columns
+  @column()
+  declare avatar: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare email: string
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
   @column()
   declare fullName: string | null
   @column({ isPrimary: true })

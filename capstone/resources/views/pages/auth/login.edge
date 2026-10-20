@@ -10,7 +10,7 @@
   })
     @field.root({ name: 'email' })
       @!field.label({ text: 'Adresse e-mail' })
-      @!input.control({ type: 'email', autocomplete: 'username', placeholder: 'vous@exemple.com' })
+      @!input.control({ type: 'email', autocomplete: 'username', placeholder: 'tegrakamz@gmail.com' })
       @!field.error()
     @end
     @field.root({ name: 'password' })
@@ -27,6 +27,7 @@
       'x-text': "submitting ? 'Connexion…' : 'Se connecter'",
     })
   @end
+  <p class="auth__foot"><a href="/forgot-password">Mot de passe oublié ?</a> · <a href="/verify-email">Confirmer mon adresse</a></p>
   <p class="auth__foot">
     Nouveau sur Kadea Chat ?
     @link({ route: 'new_account.create', class: 'il' })

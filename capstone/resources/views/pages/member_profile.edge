@@ -1,0 +1,20 @@
+@layouts.app({ title: 'Profil du membre' })
+  <main class="settings-page profile-page">
+    <a class="btn btn--secondary" href="/dashboard">Retour aux discussions</a>
+    <header class="profile-identity">
+      <p class="eyebrow">PROFIL DU MEMBRE</p>
+      @if(target.avatar)
+        <img class="profile-photo" src="/users/{{ target.id }}/avatar?v={{ target.avatar }}" alt="Photo de {{ target.full_name }}" />
+      @else
+        <span class="profile-photo profile-photo--initials">{{ (target.full_name || 'M').charAt(0).toUpperCase() }}</span>
+      @end
+      <h1>{{ target.full_name || 'Membre Kadea' }}</h1>
+      <p class="profile-email">Membre de Kadea Chat</p>
+    </header>
+    @if(!own)
+      @form({ action: '/users/' + target.id + '/conversation', method: 'POST' })
+        <button class="btn btn--primary" type="submit">Envoyer un message</button>
+      @end
+    @end
+  </main>
+@end
