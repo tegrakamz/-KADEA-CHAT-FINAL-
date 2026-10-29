@@ -1,0 +1,52 @@
+name: Kadea Chat checks
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: capstone
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: kadea_chat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ci-only-password
+      DB_SSL: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: capstone/package-lock.json
+      - run: npm ci
+      - run: cp .env.example .env
+      - name: Generate temporary CI key
+        run: node -e "require('fs').appendFileSync(process.env.GITHUB_ENV, 'APP_KEY='+require('crypto').randomBytes(32).toString('hex')+'\n')"
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:setup
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run build
+      - name: Verify compiled production artifact locally
+        run: npm run test:production
+      - name: Build production container
+        run: docker build -t kadea-chat-ci .
