@@ -1,4 +1,7 @@
 @layouts.auth()
+  @link({ route: 'home', class: 'btn btn--secondary auth-home-link' })
+    Accueil
+  @end
   <h1 class="auth__title">Content de vous revoir.</h1>
   <p class="auth__sub">Connectez-vous pour retrouver vos conversations.</p>
   @form({

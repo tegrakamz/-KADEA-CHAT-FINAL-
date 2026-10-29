@@ -238,6 +238,7 @@ dialog::backdrop { background: #29271e66; backdrop-filter: blur(4px); }
 :root[data-theme='dark'] .auth-page::before, :root[data-theme='dark'] .auth-page::after { display: none; }
 /* Theme coverage for empty states, public pages and secondary screens. */
 .global-theme-toggle { position: fixed; top: 14px; right: 14px; z-index: 40; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--card); box-shadow: 0 2px 10px #0001; }
+.auth-home-link { position: fixed; top: 14px; right: 68px; z-index: 40; min-height: 44px; box-shadow: 0 2px 10px #0001; }
 .embedded-profile .global-theme-toggle { display: none; }
 .marketing-body .global-theme-toggle { top: auto; bottom: 18px; }
 :root[data-theme='dark'] :is(.chat-empty-pane, .search-empty, .search-result, .landing-chat-card, .landing-note-card, .members-card, .alert, .flash-alert) { background: var(--card); color: var(--ink); border-color: var(--line); }
